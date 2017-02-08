@@ -26,12 +26,9 @@ namespace assignment5
     {
         //private SpaceObject[] objects = new SpaceObject[10];
         //private int count = 0;
-        const double SIZE_BASE = 0.3;
-        const double DIST_FACTOR = 50;
-        const double DIST_BASE = 0.5;
 
         public event PropertyChangedEventHandler PropertyChanged;
-        private int _days;
+        /*private int _days;
         public int days {
             get {
                 return _days;
@@ -42,7 +39,8 @@ namespace assignment5
                     PropertyChanged(this, new PropertyChangedEventArgs("days"));
                 }
             }
-        }
+        }*/
+        public int days { get; set; }
         private int _rate;
         public int rate {
             get {
@@ -80,16 +78,18 @@ namespace assignment5
         }
 
         private Timer timer;
-        private Ellipse sunEl;
+        private SpaceObject sun;
+        //private Ellipse sunEl;
 
-        private Dictionary<SpaceObject, Ellipse> objects = new Dictionary<SpaceObject, Ellipse>();
+        private List<SpaceObject> objects = new List<SpaceObject>();
 
         public MainWindow()
         {
             InitializeComponent();
 
-            SpaceObject sun = new SpaceObject("Sun", 696000, null, 0, 0);
-            sunEl = addSpaceObject(sun, "FFFFFF00");
+            sun = new SpaceObject("Sun", "FFFFFF00", 696000, null, 0, 0);
+            addSpaceObject(sun);
+            //sunEl = addSpaceObject(sun, "FFFFFF00");
 
             Dictionary<string, SpaceObject> loaded = new Dictionary<string, SpaceObject>();
             loaded["Sun"] = sun;
@@ -108,10 +108,14 @@ namespace assignment5
                 double period = Double.Parse(data[4]);
                 string colour = data[5];
 
-                SpaceObject o = new SpaceObject(name, radius, parent, distance, period);
-                addSpaceObject(o, colour);
+                SpaceObject o = new SpaceObject(name, colour, radius, parent, distance, period);
+                addSpaceObject(o);
                 loaded[name] = o;
             }
+
+            days = 0;
+            rate = 1;
+            zoom = 1;
 
             timer = new Timer();
             timer.Interval = 1000/30;
@@ -120,44 +124,32 @@ namespace assignment5
 
             //MainCanvas.MouseUp += planetClick;
 
-            days = 0;
-            rate = 1;
-            zoom = 1;
-
-            focus = sunEl;
+            //focus = sunEl;
+            focus = sun.ellipse;
 
             //(MainCanvas.RenderTransform as TransformGroup).ScaleTransform.ScaleX = 2;
 
             DataContext = this;
 
-            MainCanvas.MouseWheel += scroll;
+            //MainCanvas.MouseWheel += scroll;
 
             updateSpaceObjects(days);
         }
 
-        private Ellipse addSpaceObject(SpaceObject o, string colour) {
-
-            Ellipse el = new Ellipse();
-            el.Width = Math.Pow(o.radius, SIZE_BASE);
-            el.Height = el.Width;
-            el.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString("#" + colour);
-            el.MouseUp += planetClick;
-
-            MainCanvas.Children.Add(el);
-            objects[o] = el;
-
-            return el;
+        private void addSpaceObject(SpaceObject o) {
+            o.ellipse.MouseUp += planetClick;
+            MainCanvas.Children.Add(o.ellipse);
+            objects.Add(o);
         }
 
         private void updateSpaceObjects(int days) {
-            foreach(KeyValuePair<SpaceObject, Ellipse> pair in objects) {
-                SpaceObject obj = pair.Key;
-                Ellipse el = pair.Value;
+            foreach(SpaceObject obj in objects) {
+                obj.days += rate;
 
-                Tuple<int, int> drawingPos = calculateDrawingCoordinates(obj, days);
+                //Tuple<int, int> drawingPos = calculateDrawingCoordinates(obj, days);
 
-                Canvas.SetLeft(el, 400 + drawingPos.Item1 - el.Width / 2);
-                Canvas.SetTop(el, 300 + drawingPos.Item2 - el.Height / 2);
+                //Canvas.SetLeft(el, 400 + drawingPos.Item1 - el.Width / 2);
+                //Canvas.SetTop(el, 300 + drawingPos.Item2 - el.Height / 2);
             }
 
             //DayDisplay.Content = "Days passed: " + days;
@@ -165,7 +157,7 @@ namespace assignment5
 
         }
 
-        private Tuple<int, int> calculateDrawingCoordinates(SpaceObject o, int days) {
+        /*private Tuple<int, int> calculateDrawingCoordinates(SpaceObject o, int days) {
             if (o.parent == null) {
                 // If the object is not orbiting anything, it's in the center of the solar system
                 return new Tuple<int, int>(0, 0);
@@ -187,11 +179,12 @@ namespace assignment5
 
                 return new Tuple<int, int>(x + parentPos.Item1, y + parentPos.Item2);
             }
-        }
+        }*/
 
         private void dayTick(object sender, EventArgs e) {
             days += rate;
             updateSpaceObjects(days);
+            PropertyChanged(this, new PropertyChangedEventArgs("days"));
             PropertyChanged(this, new PropertyChangedEventArgs("transX"));
             PropertyChanged(this, new PropertyChangedEventArgs("transY"));
         }
@@ -201,7 +194,7 @@ namespace assignment5
                 focus = (Ellipse)sender;
                 zoom = 2;
             } else {
-                focus = sunEl;
+                focus = sun.ellipse;
                 zoom = 1;
             }
             e.Handled = true;
