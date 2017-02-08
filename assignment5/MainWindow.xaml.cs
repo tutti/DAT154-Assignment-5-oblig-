@@ -24,22 +24,9 @@ namespace assignment5
     /// </summary>
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
-        //private SpaceObject[] objects = new SpaceObject[10];
-        //private int count = 0;
 
         public event PropertyChangedEventHandler PropertyChanged;
-        /*private int _days;
-        public int days {
-            get {
-                return _days;
-            }
-            set {
-                _days = value;
-                if (PropertyChanged != null) {
-                    PropertyChanged(this, new PropertyChangedEventArgs("days"));
-                }
-            }
-        }*/
+
         public int days { get; set; }
         private int _rate;
         public int rate {
@@ -79,7 +66,6 @@ namespace assignment5
 
         private Timer timer;
         private SpaceObject sun;
-        //private Ellipse sunEl;
 
         private List<SpaceObject> objects = new List<SpaceObject>();
 
@@ -89,7 +75,6 @@ namespace assignment5
 
             sun = new SpaceObject("Sun", "FFFFFF00", 696000, null, 0, 0);
             addSpaceObject(sun);
-            //sunEl = addSpaceObject(sun, "FFFFFF00");
 
             Dictionary<string, SpaceObject> loaded = new Dictionary<string, SpaceObject>();
             loaded["Sun"] = sun;
@@ -122,16 +107,11 @@ namespace assignment5
             timer.Tick += dayTick;
             timer.Start();
 
-            //MainCanvas.MouseUp += planetClick;
-
-            //focus = sunEl;
             focus = sun.ellipse;
-
-            //(MainCanvas.RenderTransform as TransformGroup).ScaleTransform.ScaleX = 2;
 
             DataContext = this;
 
-            //MainCanvas.MouseWheel += scroll;
+            MainCanvas.MouseWheel += scroll;
 
             updateSpaceObjects(days);
         }
@@ -145,41 +125,10 @@ namespace assignment5
         private void updateSpaceObjects(int days) {
             foreach(SpaceObject obj in objects) {
                 obj.days += rate;
-
-                //Tuple<int, int> drawingPos = calculateDrawingCoordinates(obj, days);
-
-                //Canvas.SetLeft(el, 400 + drawingPos.Item1 - el.Width / 2);
-                //Canvas.SetTop(el, 300 + drawingPos.Item2 - el.Height / 2);
             }
-
-            //DayDisplay.Content = "Days passed: " + days;
 
 
         }
-
-        /*private Tuple<int, int> calculateDrawingCoordinates(SpaceObject o, int days) {
-            if (o.parent == null) {
-                // If the object is not orbiting anything, it's in the center of the solar system
-                return new Tuple<int, int>(0, 0);
-            } else {
-                // Get the drawing position of the parent object
-                Tuple<int, int> parentPos = calculateDrawingCoordinates(o.parent, days);
-
-                // Calculate the distance at which to draw this object
-                //double distance = Math.Log(o.distance, DIST_BASE);
-                double distance = Math.Pow(o.distance / DIST_FACTOR, DIST_BASE);
-
-                // Calculate the rotation around the parent object
-                double rotation = (days / o.period) % 1;
-                double angle = rotation * Math.PI * 2;
-
-                // Calculate the difference in x and y.
-                int x = (int)(Math.Cos(angle) * distance);
-                int y = (int)(Math.Sin(angle) * distance);
-
-                return new Tuple<int, int>(x + parentPos.Item1, y + parentPos.Item2);
-            }
-        }*/
 
         private void dayTick(object sender, EventArgs e) {
             days += rate;
