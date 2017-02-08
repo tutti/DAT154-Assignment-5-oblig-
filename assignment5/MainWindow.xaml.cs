@@ -25,16 +25,17 @@ namespace assignment5
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
 
+        private SpaceObject sun;
+        private SpaceTime st;
         public event PropertyChangedEventHandler PropertyChanged;
 
         public int days { get; set; }
-        private int _rate;
         public int rate {
             get {
-                return _rate;
+                return st.rate;
             }
             set {
-                _rate = value;
+                st.rate = value;
                 if (PropertyChanged != null) {
                     PropertyChanged(this, new PropertyChangedEventArgs("rate"));
                 }
@@ -55,17 +56,15 @@ namespace assignment5
         private Ellipse focus;
         public int transX {
             get {
-                return -(int)(Canvas.GetLeft(focus) + focus.Width / 2 - 400);
+                return -(int)(Canvas.GetLeft(focus) + (focus.Width / 2) - 400);
             }
         }
         public int transY {
             get {
-                return -(int)(Canvas.GetTop(focus) + focus.Height / 2 - 300);
+                return -(int)(Canvas.GetTop(focus) + (focus.Height / 2) - 300);
             }
         }
 
-        private Timer timer;
-        private SpaceObject sun;
 
         private List<SpaceObject> objects = new List<SpaceObject>();
 
@@ -73,8 +72,12 @@ namespace assignment5
         {
             InitializeComponent();
 
+            st = new SpaceTime();
+            st.tick += dayTick;
+
             sun = new SpaceObject("Sun", "FFFFFF00", 696000, null, 0, 0);
             addSpaceObject(sun);
+            st.tick += sun.daysPass;
 
             Dictionary<string, SpaceObject> loaded = new Dictionary<string, SpaceObject>();
             loaded["Sun"] = sun;
@@ -95,6 +98,7 @@ namespace assignment5
 
                 SpaceObject o = new SpaceObject(name, colour, radius, parent, distance, period);
                 addSpaceObject(o);
+                st.tick += o.daysPass;
                 loaded[name] = o;
             }
 
@@ -102,18 +106,13 @@ namespace assignment5
             rate = 1;
             zoom = 1;
 
-            timer = new Timer();
-            timer.Interval = 1000/30;
-            timer.Tick += dayTick;
-            timer.Start();
-
             focus = sun.ellipse;
 
             DataContext = this;
 
             MainCanvas.MouseWheel += scroll;
 
-            updateSpaceObjects(days);
+            //updateSpaceObjects(days);
         }
 
         private void addSpaceObject(SpaceObject o) {
@@ -122,17 +121,17 @@ namespace assignment5
             objects.Add(o);
         }
 
-        private void updateSpaceObjects(int days) {
+        /*
+        private void updateSpaceObjects(int daysPassed) {
             foreach(SpaceObject obj in objects) {
                 obj.days += rate;
             }
-
-
         }
+        */
 
-        private void dayTick(object sender, EventArgs e) {
-            days += rate;
-            updateSpaceObjects(days);
+        private void dayTick(int daysPassed) {
+            days += daysPassed;
+            //updateSpaceObjects(daysPassed);
             PropertyChanged(this, new PropertyChangedEventArgs("days"));
             PropertyChanged(this, new PropertyChangedEventArgs("transX"));
             PropertyChanged(this, new PropertyChangedEventArgs("transY"));

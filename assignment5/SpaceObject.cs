@@ -48,6 +48,10 @@ namespace SpaceSim {
             el.SetBinding(Canvas.TopProperty, bindingY);
         }
 
+        public void daysPass(int daysPassed) {
+            days += daysPassed;
+        }
+
         private void calculatePosition() {
             if (hasPosition) return;
 
